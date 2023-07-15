@@ -7,6 +7,7 @@ import { User, UserSchema } from './user.schema';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from '../guards/jwt.strategy';
+import { TaskModule } from '../tasks/task.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { JwtStrategy } from '../guards/jwt.strategy';
       }),
       inject: [ConfigService],
     }),
+    TaskModule,
     MongooseModule.forFeature([{ schema: UserSchema, name: User.name }]),
   ],
   controllers: [UserController],
