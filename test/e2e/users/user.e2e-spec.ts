@@ -1,18 +1,36 @@
 import * as request from 'supertest';
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../../../src/app.module';
 import { userInput } from '../../mocks/user.mock';
+import { ConfigModule } from '@nestjs/config';
+import { join } from 'path';
+import { EnvService } from '../../../src/config/env.service';
 
 describe('User module (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+      imports: [
+        AppModule,
+        ConfigModule.forRoot({
+          isGlobal: true,
+          envFilePath: join(__dirname, '../../../.env.test'),
+        }),
+      ],
+    })
+      .overrideProvider(EnvService)
+      .useValue({
+        mongoUri: 'mongodb://localhost:3001/test',
+        jwtSecret: 'abracadabra',
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
   });
 

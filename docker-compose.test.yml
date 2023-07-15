@@ -2,20 +2,21 @@ version: "3.8"
 services:
   app:
     build: .
-    command: yarn run start:prod
-    volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules
+    command: yarn test:all
     ports:
       - 3000:3000
+    volumes:
+      - .:/app
     links:
       - mongo
     depends_on:
       - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:3001
 
   mongo:
     image: mongo:latest
     volumes:
-      - ./data:/data/db
+      - ./data-test:/data/db
     ports:
-      - 27017:27017
+      - 3001:27017

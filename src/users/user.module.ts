@@ -4,19 +4,22 @@ import { UserService } from './user.service';
 import { UserRepository } from './user.repository';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './user.schema';
-import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from '../guards/jwt.strategy';
 import { TaskModule } from '../tasks/task.module';
+import { EnvService } from '../config/env.service';
+import { EnvModule } from '../config/env.module';
 
 @Module({
   imports: [
+    EnvModule,
     JwtModule.registerAsync({
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET'),
+      useFactory: async (envService: EnvService) => ({
+        secret: envService.jwtSecret,
         signOptions: { expiresIn: '1h' },
       }),
-      inject: [ConfigService],
+      imports: [EnvModule],
+      inject: [EnvService],
     }),
     TaskModule,
     MongooseModule.forFeature([{ schema: UserSchema, name: User.name }]),
