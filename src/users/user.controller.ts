@@ -21,12 +21,12 @@ export class UserController {
   constructor(private readonly service: UserService) {}
 
   @Post()
-  @HttpCode(201)
   create(@Body() createDto: CreateUserDto) {
     return this.service.create(createDto);
   }
 
   @Post('auth')
+  @HttpCode(200)
   auth(@Body() authDto: AuthDto) {
     return this.service.auth(authDto);
   }

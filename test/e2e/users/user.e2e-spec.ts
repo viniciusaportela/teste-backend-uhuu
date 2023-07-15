@@ -1,37 +1,47 @@
-import * as request from 'supertest';
+import request from 'supertest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../../../src/app.module';
-import { userInput } from '../../mocks/user.mock';
-import { ConfigModule } from '@nestjs/config';
-import { join } from 'path';
-import { EnvService } from '../../../src/config/env.service';
+import {
+  authInput,
+  authWrongInput,
+  userInput,
+  userMock,
+  userOutput,
+  wrongUserUpdateInput,
+} from '../../mocks/user.mock';
+import { Connection, Types } from 'mongoose';
+import { getConnectionToken } from '@nestjs/mongoose';
+import { clearDatabase } from '../../utils/clear-database';
+import { User } from '../../../src/users/user.schema';
+import { addToCollection } from '../../utils/add-to-collection';
+import { ErrorMessage } from '../../../src/utils/enums/error-message.enum';
+import { JwtService } from '@nestjs/jwt';
+import { getTestHeaders } from '../../utils/get-headers';
+import { removeFromCollection } from '../../utils/remove-from-collection';
 
 describe('User module (e2e)', () => {
   let app: INestApplication;
+  let connection: Connection;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        AppModule,
-        ConfigModule.forRoot({
-          isGlobal: true,
-          envFilePath: join(__dirname, '../../../.env.test'),
-        }),
-      ],
-    })
-      .overrideProvider(EnvService)
-      .useValue({
-        mongoUri: 'mongodb://localhost:3001/test',
-        jwtSecret: 'abracadabra',
-      })
-      .compile();
+      imports: [AppModule],
+    }).compile();
 
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(
       new ValidationPipe({ whitelist: true, transform: true }),
     );
+
+    connection = app.get(getConnectionToken());
+
     await app.init();
+  });
+
+  afterEach(async () => {
+    await clearDatabase(connection);
+    await app.close();
   });
 
   describe('/ (POST)', () => {
@@ -39,8 +49,13 @@ describe('User module (e2e)', () => {
       return request(app.getHttpServer()).post('/user').expect(400);
     });
 
-    it('should fail if email already exists', () => {
-      return request(app.getHttpServer()).post('/user').expect(409);
+    it('should fail if email already exists', async () => {
+      await addToCollection(connection, User.name, [userMock]);
+
+      return request(app.getHttpServer())
+        .post('/user')
+        .send(userInput)
+        .expect(409);
     });
 
     it('should create a user', async () => {
@@ -49,7 +64,117 @@ describe('User module (e2e)', () => {
         .send(userInput)
         .expect(201);
 
-      expect(response.body).toStrictEqual({});
+      expect(response.body).toStrictEqual(userOutput);
+    });
+  });
+
+  describe('/user/auth (POST)', () => {
+    it('should fail if provide invalid inputs', async () => {
+      await request(app.getHttpServer()).post('/user/auth').expect(400);
+    });
+
+    it("should fail if user doesn't exists", async () => {
+      const response = await request(app.getHttpServer())
+        .post('/user/auth')
+        .send(authWrongInput);
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe(ErrorMessage.WrongCredentials);
+    });
+
+    it('should fail if provide incorrect credentials', async () => {
+      await addToCollection(connection, User.name, [userMock]);
+
+      const response = await request(app.getHttpServer())
+        .post('/user/auth')
+        .send(authWrongInput);
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe(ErrorMessage.WrongCredentials);
+    });
+
+    it('should return a valid token', async () => {
+      await addToCollection(connection, User.name, [userMock]);
+
+      const response = await request(app.getHttpServer())
+        .post('/user/auth')
+        .send(authInput);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toStrictEqual({ token: expect.any(String) });
+
+      const token = response.body.token;
+      const decoded = app.get(JwtService).decode(token);
+      expect(Types.ObjectId.isValid(decoded.sub)).toBeTruthy();
+    });
+  });
+
+  describe('/me (PUT)', () => {
+    it('should fail if is not authenticated', async () => {
+      return request(app.getHttpServer()).put('/user/me').expect(401);
+    });
+
+    it('should fail if provide invalid inputs', async () => {
+      await addToCollection(connection, User.name, [userMock]);
+
+      return request(app.getHttpServer())
+        .put('/user/me')
+        .set(await getTestHeaders(app))
+        .send(wrongUserUpdateInput)
+        .expect(400);
+    });
+
+    it('should update your own user', async () => {
+      await addToCollection(connection, User.name, [userMock]);
+
+      const response = await request(app.getHttpServer())
+        .put('/user/me')
+        .set(await getTestHeaders(app))
+        .send(userInput);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toStrictEqual(userOutput);
+    });
+  });
+
+  describe('/me (DELETE)', () => {
+    it('should fail if is not authenticated', async () => {
+      return request(app.getHttpServer()).delete('/user/me').expect(401);
+    });
+
+    it('should fail if user was already deleted', async () => {
+      await addToCollection(connection, User.name, [userMock]);
+
+      const headers = await getTestHeaders(app);
+
+      await removeFromCollection(connection, User.name, {
+        email: userMock.email,
+      });
+
+      const response = await request(app.getHttpServer())
+        .delete('/user/me')
+        .set(headers)
+        .send(wrongUserUpdateInput);
+
+      expect(response.statusCode).toBe(401);
+      expect(response.body.message).toBe(ErrorMessage.UnknownUser);
+    });
+  });
+
+  describe('/me (GET)', () => {
+    it('should fail if is not authenticated', async () => {
+      return request(app.getHttpServer()).get('/user/me').expect(401);
+    });
+
+    it('should return your own user', async () => {
+      await addToCollection(connection, User.name, [userMock]);
+
+      const response = await request(app.getHttpServer())
+        .get('/user/me')
+        .set(await getTestHeaders(app));
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toStrictEqual(userOutput);
     });
   });
 });

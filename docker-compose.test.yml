@@ -1,6 +1,6 @@
 version: "3.8"
 services:
-  app:
+  app-test:
     build: .
     command: yarn test:all
     ports:
@@ -8,13 +8,14 @@ services:
     volumes:
       - .:/app
     links:
-      - mongo
+      - mongo-test
     depends_on:
-      - mongo
+      - mongo-test
     environment:
-      - MONGO_URI=mongodb://mongo:3001
+      - MONGO_URI=mongodb://mongo-test:3001
+      - NODE_ENV=test
 
-  mongo:
+  mongo-test:
     image: mongo:latest
     volumes:
       - ./data-test:/data/db

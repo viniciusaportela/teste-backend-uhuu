@@ -7,4 +7,6 @@ export enum ErrorMessage {
 
   TaskNotFound = 'Task not found',
   NotHavePermission = 'You do not have permission to do this action in this resource',
+
+  Unauthorized = 'Unauthorized',
 }

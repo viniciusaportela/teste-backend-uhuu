@@ -45,7 +45,7 @@ export class UserService {
     const user = await this.repository.findByEmailWithPassword(email);
 
     if (!user) {
-      throw new NotFoundException(ErrorMessage.WrongCredentials);
+      throw new UnauthorizedException(ErrorMessage.WrongCredentials);
     }
 
     const isPasswordValid = await compare(password, user.password);
