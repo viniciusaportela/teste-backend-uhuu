@@ -75,7 +75,7 @@ yarn start // ou npm start
 Os endpoints estão listados [aqui](#docs)
 
 #### Testes
-Os testes usam uma instância real do MongoDB, logo, será necessário ter uma instância do MongoDB apenas para os testes, pode ser usado a mesma estratégia do anterior e usar o container do Mongo de teste.
+Os testes usam uma instância real do MongoDB, logo, será necessário ter uma instância do MongoDB apenas para os testes, pode ser usado a mesma estratégia do anterior e usar o container de teste do Mongo.
 
 Primeiramente é necessário configurar as variáveis do ambiente de teste, adicione uma arquivo `.env.test` (pode usar o `.env.example` como base)
 
@@ -84,7 +84,7 @@ MONGO_URI=mongodb://localhost:27017/test
 JWT_SECRET=abacadabra
 ```
 
-> Para rodar os testes localmente com um container do Mongo de Teste, basta rodar o comando:
+> Para rodar os testes localmente com um container de teste do Mongo, basta rodar o comando:
 > ```
 > docker compose -f docker-compose.test.yml up mongo-test
 > ```
