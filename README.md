@@ -101,7 +101,9 @@ yarn test
 ```
 
 # Coverage
-O serviço possui 100% de cobertura de testes
+O serviço possui 100% de cobertura de código nos testes
+
+![code coverage](/docs/coverage.png)
 
 # Documentação <a name="docs"></a>
 
