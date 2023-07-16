@@ -3,8 +3,6 @@ services:
   app-test:
     build: .
     command: yarn test
-    ports:
-      - 3000:3000
     volumes:
       - .:/app
     links:
