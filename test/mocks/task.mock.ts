@@ -2,6 +2,9 @@ import omit from 'lodash.omit';
 import { TaskStatus } from '../../src/tasks/enums/task-status.enum';
 import { Types } from 'mongoose';
 import { userMock } from './user.mock';
+import { CreateTaskDto } from '../../src/tasks/dtos/create-task.dto';
+import { Task } from '../../src/tasks/task.schema';
+import { UpdateTaskDto } from '../../src/tasks/dtos/update-task.dto';
 
 export const taskMock = {
   _id: new Types.ObjectId('64b308c0a520e426fdea1fea'),
@@ -12,6 +15,7 @@ export const taskMock = {
   createdAt: new Date(),
   updatedAt: new Date(),
   createdBy: userMock._id,
+  __v: 0,
 };
 
 export const taskMock2 = {
@@ -23,6 +27,7 @@ export const taskMock2 = {
   createdAt: new Date(),
   updatedAt: new Date(),
   createdBy: userMock._id,
+  __v: 0,
 };
 
 export const wrongTaskInput = {
@@ -32,11 +37,6 @@ export const wrongTaskInput = {
   status: 'wrong',
 };
 
-export const taskInput = {
-  ...omit(taskMock, 'createdAt', 'updatedAt'),
-  conclusionDate: taskMock.conclusionDate.toISOString(),
-};
-
 export const taskUpdateInput = {
   title: 'Teste 2',
   description: 'Teste 2',
@@ -44,9 +44,20 @@ export const taskUpdateInput = {
   status: TaskStatus.Done,
 };
 
-export function toOutput(input: any) {
+export const wrongTaskUpdateInput = {
+  ...wrongTaskInput,
+};
+
+export function toInput(mock: Task) {
   return {
-    ...input,
+    ...omit(mock, 'createdAt', 'updatedAt', '_id', '__v'),
+    conclusionDate: mock.conclusionDate.toISOString(),
+  };
+}
+
+export function toOutput(input: CreateTaskDto | Task) {
+  return {
+    ...omit(input, '__v'),
     _id: expect.any(String),
     conclusionDate:
       typeof input.conclusionDate === 'string'
@@ -58,11 +69,12 @@ export function toOutput(input: any) {
   };
 }
 
-export const taskUpdateOutput = {
-  ...toOutput(taskInput),
-  ...taskUpdateInput,
-};
-
-export const wrongTaskUpdateInput = {
-  ...wrongTaskInput,
-};
+export function toUpdateOutput(
+  originalInput: Task,
+  updateInput: UpdateTaskDto,
+) {
+  return {
+    ...toOutput(originalInput),
+    ...omit(updateInput, 'password'),
+  };
+}

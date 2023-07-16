@@ -25,8 +25,8 @@ export class CreateTaskDto {
 
   @IsDateString()
   @IsNotEmpty()
-  @ApiProperty()
-  conclusionDate: Date;
+  @ApiProperty({ type: Date })
+  conclusionDate: string;
 
   @IsEnum(TaskStatus)
   @IsNotEmpty()

@@ -3,12 +3,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../../../src/app.module';
 import {
-  taskInput,
   taskMock,
   taskMock2,
   taskUpdateInput,
-  taskUpdateOutput,
+  toInput,
   toOutput,
+  toUpdateOutput,
   wrongTaskInput,
   wrongTaskUpdateInput,
 } from '../../mocks/task.mock';
@@ -23,17 +23,18 @@ import { User } from '../../../src/users/user.schema';
 import { genMongoId } from '../../utils/gen-mongo-id';
 import { ErrorMessage } from '../../../src/utils/enums/error-message.enum';
 import { userMock } from '../../mocks/user.mock';
+import { TaskStatus } from '../../../src/tasks/enums/task-status.enum';
 
 describe('Task module (e2e)', () => {
   let app: INestApplication;
   let connection: Connection;
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const appFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = appFixture.createNestApplication();
     app.useGlobalPipes(
       new ValidationPipe({ whitelist: true, transform: true }),
     );
@@ -65,13 +66,15 @@ describe('Task module (e2e)', () => {
     });
 
     it('should create a task', async () => {
+      const taskInput = toInput(taskMock);
+
       const response = await request(app.getHttpServer())
         .post('/task')
         .send(taskInput)
         .set(await getTestHeaders(app))
         .expect(201);
 
-      expect(response.body).toStrictEqual(toOutput(taskInput));
+      expect(response.body).toStrictEqual(toOutput(taskMock));
     });
   });
 
@@ -99,6 +102,7 @@ describe('Task module (e2e)', () => {
     });
 
     it('should update your own task', async () => {
+      const taskUpdateOutput = toUpdateOutput(taskMock, taskUpdateInput);
       await addToCollection(connection, Task.name, [taskMock]);
 
       const task = await getLastInserted(connection, Task.name);
@@ -145,7 +149,7 @@ describe('Task module (e2e)', () => {
         .set(await getTestHeaders(app));
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toStrictEqual(toOutput(taskInput));
+      expect(response.body).toStrictEqual(toOutput(taskMock));
 
       const taskAfterDelete = await getLastInserted(connection, Task.name);
       expect(taskAfterDelete).toBeFalsy();
@@ -184,7 +188,7 @@ describe('Task module (e2e)', () => {
         .set(await getTestHeaders(app));
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toStrictEqual(toOutput(taskInput));
+      expect(response.body).toStrictEqual(toOutput(taskMock));
     });
   });
 
@@ -209,6 +213,25 @@ describe('Task module (e2e)', () => {
       expect(response.body).toStrictEqual([
         toOutput(taskMock),
         toOutput(taskMock2),
+      ]);
+    });
+
+    it('should get all tasks of the requester user, and filter by status', async () => {
+      await addToCollection(connection, Task.name, [
+        { ...taskMock },
+        { ...taskMock2, status: TaskStatus.Done },
+        { ...taskMock, _id: genMongoId(), createdBy: genMongoId() },
+      ]);
+
+      const response = await request(app.getHttpServer())
+        .get(`/task/me`)
+        .query({ status: TaskStatus.Done })
+        .set(await getTestHeaders(app));
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveLength(1);
+      expect(response.body).toStrictEqual([
+        toOutput({ ...taskMock2, status: TaskStatus.Done }),
       ]);
     });
   });

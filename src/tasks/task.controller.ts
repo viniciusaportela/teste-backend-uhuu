@@ -24,7 +24,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ErrorMessage } from '../utils/enums/error-message.enum';
-import { Task } from './task.schema';
 import { TaskResDto } from './dtos/task-res.dto';
 
 @ApiBearerAuth()

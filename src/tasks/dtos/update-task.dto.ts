@@ -18,8 +18,8 @@ export class UpdateTaskDto {
 
   @IsString()
   @IsOptional()
-  @ApiProperty({ required: false })
-  conclusionDate: Date;
+  @ApiProperty({ required: false, type: Date })
+  conclusionDate: string;
 
   @IsEnum(TaskStatus)
   @IsOptional()

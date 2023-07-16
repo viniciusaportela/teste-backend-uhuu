@@ -5,11 +5,11 @@ import { AppModule } from '../../../src/app.module';
 import {
   authInput,
   authWrongInput,
+  toInput,
   toOutput,
-  userInput,
+  toUpdateOutput,
   userMock,
   userUpdateInput,
-  userUpdateOutput,
   wrongUserUpdateInput,
 } from '../../mocks/user.mock';
 import { Connection, Types } from 'mongoose';
@@ -30,11 +30,11 @@ describe('User module (e2e)', () => {
   let connection: Connection;
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const appFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = appFixture.createNestApplication();
     app.useGlobalPipes(
       new ValidationPipe({ whitelist: true, transform: true }),
     );
@@ -55,6 +55,7 @@ describe('User module (e2e)', () => {
     });
 
     it('should fail if email already exists', async () => {
+      const userInput = toInput(userMock);
       await addToCollection(connection, User.name, [userMock]);
 
       return request(app.getHttpServer())
@@ -64,6 +65,7 @@ describe('User module (e2e)', () => {
     });
 
     it('should create a user', async () => {
+      const userInput = toInput(userMock);
       const response = await request(app.getHttpServer())
         .post('/user')
         .send(userInput)
@@ -130,6 +132,7 @@ describe('User module (e2e)', () => {
     });
 
     it('should update your own user', async () => {
+      const userUpdateOutput = toUpdateOutput(userMock, userUpdateInput);
       await addToCollection(connection, User.name, [userMock]);
 
       const response = await request(app.getHttpServer())
@@ -174,7 +177,7 @@ describe('User module (e2e)', () => {
         .set(await getTestHeaders(app));
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toStrictEqual(toOutput(userInput));
+      expect(response.body).toStrictEqual(toOutput(userMock));
 
       const userAfterDelete = await getLastInserted(connection, User.name);
       expect(userAfterDelete).toBeFalsy();
@@ -198,7 +201,7 @@ describe('User module (e2e)', () => {
         .set(await getTestHeaders(app));
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toStrictEqual(toOutput(userInput));
+      expect(response.body).toStrictEqual(toOutput(userMock));
     });
   });
 });

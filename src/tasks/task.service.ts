@@ -28,10 +28,6 @@ export class TaskService {
 
     const editedTask = await this.repository.update(id, updateDto);
 
-    if (!editedTask) {
-      throw new NotFoundException(ErrorMessage.TaskNotFound);
-    }
-
     return editedTask;
   }
 
