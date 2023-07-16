@@ -22,6 +22,8 @@ import { JwtService } from '@nestjs/jwt';
 import { getTestHeaders } from '../../utils/get-headers';
 import { removeFromCollection } from '../../utils/remove-from-collection';
 import { getLastInserted } from '../../utils/get-last-inserted';
+import { taskMock } from '../../mocks/task.mock';
+import { Task } from '../../../src/tasks/task.schema';
 
 describe('User module (e2e)', () => {
   let app: INestApplication;
@@ -165,6 +167,7 @@ describe('User module (e2e)', () => {
 
     it("should delete your own user and all it's related tasks", async () => {
       await addToCollection(connection, User.name, [userMock]);
+      await addToCollection(connection, Task.name, [taskMock]);
 
       const response = await request(app.getHttpServer())
         .delete('/user/me')
@@ -176,7 +179,9 @@ describe('User module (e2e)', () => {
       const userAfterDelete = await getLastInserted(connection, User.name);
       expect(userAfterDelete).toBeFalsy();
 
-      // TODO verify if deleted all related tasks
+      // Expect all tasks from the deleted user to also be deleted
+      const taskAfterDelete = await getLastInserted(connection, Task.name);
+      expect(taskAfterDelete).toBeFalsy();
     });
   });
 

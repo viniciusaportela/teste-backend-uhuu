@@ -3,7 +3,7 @@ import { IsEmail, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
-  @ApiProperty({ example: 'your_user_name' })
+  @ApiProperty({ example: 'Your Name' })
   name: string;
 
   @IsString()

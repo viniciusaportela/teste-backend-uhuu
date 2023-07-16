@@ -3,16 +3,12 @@ import { hashPasswordSync } from '../../src/utils/hash-password';
 import { Types } from 'mongoose';
 
 export const userMock = {
+  _id: new Types.ObjectId('64b303431d9b59b567fac3a0'),
   name: 'Teste',
   email: 'test@gmail.com',
   password: hashPasswordSync('1234'),
   createdAt: new Date(),
   updatedAt: new Date(),
-};
-
-export const userMockWithId = {
-  ...userMock,
-  _id: new Types.ObjectId('64b303431d9b59b567fac3a0'),
 };
 
 export const userInput = {

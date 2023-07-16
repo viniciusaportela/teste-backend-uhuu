@@ -20,9 +20,9 @@ import { addToCollection } from '../../utils/add-to-collection';
 import { getTestHeaders } from '../../utils/get-headers';
 import { getLastInserted } from '../../utils/get-last-inserted';
 import { User } from '../../../src/users/user.schema';
-import { userMockWithId } from '../../mocks/user.mock';
 import { genMongoId } from '../../utils/gen-mongo-id';
 import { ErrorMessage } from '../../../src/utils/enums/error-message.enum';
+import { userMock } from '../../mocks/user.mock';
 
 describe('Task module (e2e)', () => {
   let app: INestApplication;
@@ -39,7 +39,7 @@ describe('Task module (e2e)', () => {
     );
 
     connection = app.get(getConnectionToken());
-    await addToCollection(connection, User.name, [userMockWithId]);
+    await addToCollection(connection, User.name, [userMock]);
 
     await app.init();
   });

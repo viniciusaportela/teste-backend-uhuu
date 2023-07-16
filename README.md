@@ -1,13 +1,15 @@
 # teste-backend-uhuu
 
-## Rodar com Docker
+## Rodar localmente
 
-### Aplicação
+### Rodar com Docker
 
-### Testes
+#### Aplicação
 
-## Rodar sem Docker
+#### Testes
 
-### Aplicações
+### Rodar sem Docker
 
-### Testes
+#### Aplicações
+
+#### Testes

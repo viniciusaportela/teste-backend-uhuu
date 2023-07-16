@@ -4,11 +4,11 @@ import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 export class AuthDto {
   @IsEmail()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ example: 'example@gmail.com' })
   email: string;
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ example: '1234' })
   password: string;
 }
