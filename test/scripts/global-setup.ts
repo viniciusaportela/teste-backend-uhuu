@@ -1,5 +1,7 @@
 import { config } from 'dotenv';
 
 export default async () => {
-  config({ path: '.env.test' });
+  config({
+    path: process.env.TESTING_IN_DOCKER ? '.env.test-docker' : '.env.test',
+  });
 };

@@ -1,7 +1,5 @@
 import request from 'supertest';
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { AppModule } from '../../../src/app.module';
+import { INestApplication } from '@nestjs/common';
 import {
   authInput,
   authWrongInput,
@@ -13,7 +11,6 @@ import {
   wrongUserUpdateInput,
 } from '../../mocks/users/user.mock';
 import { Connection, Types } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
 import { clearDatabase } from '../../utils/clear-database';
 import { User } from '../../../src/users/user.schema';
 import { addToCollection } from '../../utils/add-to-collection';
@@ -24,22 +21,15 @@ import { removeFromCollection } from '../../utils/remove-from-collection';
 import { getLastInserted } from '../../utils/get-last-inserted';
 import { taskMock } from '../../mocks/tasks/task.mock';
 import { Task } from '../../../src/tasks/task.schema';
+import { createTestingModule } from '../../utils/create-testing-module';
 
 describe('User module (e2e)', () => {
   let app: INestApplication;
   let connection: Connection;
 
   beforeEach(async () => {
-    const appFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = appFixture.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
-
-    connection = app.get(getConnectionToken());
+    const { testApp, testConnection } = await createTestingModule();
+    [app, connection] = [testApp, testConnection];
 
     await app.init();
   });

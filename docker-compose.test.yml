@@ -13,6 +13,7 @@ services:
       - mongo-test
     environment:
       - NODE_ENV=test
+      - TESTING_IN_DOCKER=true
 
   mongo-test:
     image: mongo:latest

@@ -10,7 +10,12 @@ import { EnvModule } from './config/env.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+      envFilePath:
+        process.env.NODE_ENV === 'test'
+          ? process.env.TESTING_IN_DOCKER === 'true'
+            ? '.env.test-docker'
+            : '.env.test'
+          : '.env',
     }),
     EnvModule,
     MongooseModule.forRootAsync({
