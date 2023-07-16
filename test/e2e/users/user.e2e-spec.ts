@@ -5,9 +5,11 @@ import { AppModule } from '../../../src/app.module';
 import {
   authInput,
   authWrongInput,
+  toOutput,
   userInput,
   userMock,
-  userOutput,
+  userUpdateInput,
+  userUpdateOutput,
   wrongUserUpdateInput,
 } from '../../mocks/user.mock';
 import { Connection, Types } from 'mongoose';
@@ -19,6 +21,7 @@ import { ErrorMessage } from '../../../src/utils/enums/error-message.enum';
 import { JwtService } from '@nestjs/jwt';
 import { getTestHeaders } from '../../utils/get-headers';
 import { removeFromCollection } from '../../utils/remove-from-collection';
+import { getLastInserted } from '../../utils/get-last-inserted';
 
 describe('User module (e2e)', () => {
   let app: INestApplication;
@@ -64,7 +67,7 @@ describe('User module (e2e)', () => {
         .send(userInput)
         .expect(201);
 
-      expect(response.body).toStrictEqual(userOutput);
+      expect(response.body).toStrictEqual(toOutput(userInput));
     });
   });
 
@@ -130,10 +133,10 @@ describe('User module (e2e)', () => {
       const response = await request(app.getHttpServer())
         .put('/user/me')
         .set(await getTestHeaders(app))
-        .send(userInput);
+        .send(userUpdateInput);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toStrictEqual(userOutput);
+      expect(response.body).toStrictEqual(userUpdateOutput);
     });
   });
 
@@ -159,6 +162,22 @@ describe('User module (e2e)', () => {
       expect(response.statusCode).toBe(401);
       expect(response.body.message).toBe(ErrorMessage.UnknownUser);
     });
+
+    it("should delete your own user and all it's related tasks", async () => {
+      await addToCollection(connection, User.name, [userMock]);
+
+      const response = await request(app.getHttpServer())
+        .delete('/user/me')
+        .set(await getTestHeaders(app));
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toStrictEqual(toOutput(userInput));
+
+      const userAfterDelete = await getLastInserted(connection, User.name);
+      expect(userAfterDelete).toBeFalsy();
+
+      // TODO verify if deleted all related tasks
+    });
   });
 
   describe('/me (GET)', () => {
@@ -174,7 +193,7 @@ describe('User module (e2e)', () => {
         .set(await getTestHeaders(app));
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toStrictEqual(userOutput);
+      expect(response.body).toStrictEqual(toOutput(userInput));
     });
   });
 });

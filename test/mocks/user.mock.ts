@@ -1,5 +1,6 @@
 import omit from 'lodash.omit';
 import { hashPasswordSync } from '../../src/utils/hash-password';
+import { Types } from 'mongoose';
 
 export const userMock = {
   name: 'Teste',
@@ -9,8 +10,13 @@ export const userMock = {
   updatedAt: new Date(),
 };
 
+export const userMockWithId = {
+  ...userMock,
+  _id: new Types.ObjectId('64b303431d9b59b567fac3a0'),
+};
+
 export const userInput = {
-  ...omit(userMock, 'createdAt', 'updatedAt'),
+  ...omit(userMock, 'createdAt', 'updatedAt', '_id'),
   password: '1234',
 };
 
@@ -29,12 +35,14 @@ export const userUpdateInputWithEmail = {
   email: 'test2@gmail.com',
 };
 
-export const userOutput = {
-  ...omit(userMock, 'password'),
-  _id: expect.any(String),
-  createdAt: expect.any(String),
-  updatedAt: expect.any(String),
-};
+export function toOutput(input: any) {
+  return {
+    ...omit(input, 'password'),
+    _id: expect.any(String),
+    createdAt: expect.any(String),
+    updatedAt: expect.any(String),
+  };
+}
 
 export const authInput = {
   email: userInput.email,
@@ -44,4 +52,9 @@ export const authInput = {
 export const authWrongInput = {
   email: 'wrong@gmail.com',
   password: 'wrong',
+};
+
+export const userUpdateOutput = {
+  ...toOutput(userInput),
+  ...omit(userUpdateInput, 'password'),
 };

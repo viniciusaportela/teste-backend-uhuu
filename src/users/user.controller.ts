@@ -14,36 +14,85 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { UserId } from '../utils/decorators/user-id.decorator';
 import { AuthDto } from './dtos/auth.dto';
 import { JwtAuthGuard } from '../guards/jwt.guard';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ErrorMessage } from '../utils/enums/error-message.enum';
+import { User } from './user.schema';
 
-// TODO add swagger
+@ApiBearerAuth()
+@ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private readonly service: UserService) {}
 
   @Post()
+  @ApiResponse({
+    status: 201,
+    description: 'Successfully created user',
+    type: User,
+  })
+  @ApiResponse({
+    status: 400,
+    description: ErrorMessage.InvalidInput,
+  })
   create(@Body() createDto: CreateUserDto) {
     return this.service.create(createDto);
   }
 
   @Post('auth')
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully authenticated. Returned the user token',
+  })
+  @ApiResponse({
+    status: 400,
+    description: ErrorMessage.InvalidInput,
+  })
+  @ApiResponse({
+    status: 401,
+    description: ErrorMessage.WrongCredentials,
+  })
   @HttpCode(200)
   auth(@Body() authDto: AuthDto) {
     return this.service.auth(authDto);
   }
 
   @Put('me')
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully updated your user',
+  })
+  @ApiResponse({
+    status: 401,
+    description: ErrorMessage.NotAuthenticated,
+  })
   @UseGuards(JwtAuthGuard)
   updateMe(@UserId() userId: string, @Body() updateDto: UpdateUserDto) {
     return this.service.update(userId, updateDto);
   }
 
   @Delete('me')
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully deleted your user',
+  })
+  @ApiResponse({
+    status: 401,
+    description: ErrorMessage.NotAuthenticated,
+  })
   @UseGuards(JwtAuthGuard)
   deleteMe(@UserId() userId: string) {
     return this.service.delete(userId);
   }
 
   @Get('me')
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully retrieved your user',
+  })
+  @ApiResponse({
+    status: 401,
+    description: ErrorMessage.NotAuthenticated,
+  })
   @UseGuards(JwtAuthGuard)
   getMe(@UserId() userId: string) {
     return this.service.findById(userId);

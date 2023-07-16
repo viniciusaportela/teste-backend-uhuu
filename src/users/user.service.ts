@@ -12,12 +12,14 @@ import { ErrorMessage } from '../utils/enums/error-message.enum';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { hashPassword } from '../utils/hash-password';
+import { TaskService } from '../tasks/task.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly repository: UserRepository,
     private readonly jwtService: JwtService,
+    private readonly taskService: TaskService,
   ) {}
 
   async create(createDto: CreateUserDto) {
@@ -80,7 +82,9 @@ export class UserService {
       throw new NotFoundException(ErrorMessage.UserNotFound);
     }
 
-    // TODO also delete all tasks
+    // It would be more recommended to use a transactions, but as it would require setup a MongoDB ReplicaSet
+    // I decided for the sake of simplicity to not use it here
+    await this.taskService.deleteAllFromUser(id);
 
     return deletedUser;
   }

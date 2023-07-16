@@ -13,7 +13,7 @@ export class TaskRepository {
 
   async create(createDto: CreateTaskDto) {
     const createdTask = await this.model.create(createDto);
-    return createdTask.toObject();
+    return createdTask.toObject({ useProjection: true });
   }
 
   update(id: string, updateDto: UpdateTaskDto) {
