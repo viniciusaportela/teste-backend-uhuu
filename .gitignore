@@ -36,6 +36,7 @@ lerna-debug.log*
 
 # Misc
 .env
+.env.test
 data
 data-test
 docker-app

@@ -15,13 +15,13 @@ import {
   toRawUpdateOutput,
   userMock,
   userUpdateInput,
-} from '../../mocks/user.mock';
+} from '../../mocks/users/user.mock';
 import { UserRepository } from '../../../src/users/user.repository';
-import { userRepositoryMock } from '../../mocks/user-repository.mock';
+import { userRepositoryMock } from '../../mocks/users/user-repository.mock';
 import { JwtService } from '@nestjs/jwt';
 import { jwtServiceMock } from '../../mocks/jwt-service.mock';
 import { TaskService } from '../../../src/tasks/task.service';
-import { taskServiceMock } from '../../mocks/task-service.mock';
+import { taskServiceMock } from '../../mocks/tasks/task-service.mock';
 
 describe('User Service', () => {
   let app: INestApplication;

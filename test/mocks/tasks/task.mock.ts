@@ -1,10 +1,10 @@
 import omit from 'lodash.omit';
-import { TaskStatus } from '../../src/tasks/enums/task-status.enum';
+import { TaskStatus } from '../../../src/tasks/enums/task-status.enum';
 import { Types } from 'mongoose';
-import { userMock } from './user.mock';
-import { CreateTaskDto } from '../../src/tasks/dtos/create-task.dto';
-import { Task } from '../../src/tasks/task.schema';
-import { UpdateTaskDto } from '../../src/tasks/dtos/update-task.dto';
+import { userMock } from '../users/user.mock';
+import { CreateTaskDto } from '../../../src/tasks/dtos/create-task.dto';
+import { Task } from '../../../src/tasks/task.schema';
+import { UpdateTaskDto } from '../../../src/tasks/dtos/update-task.dto';
 
 export const taskMock = {
   _id: new Types.ObjectId('64b308c0a520e426fdea1fea'),
@@ -69,12 +69,28 @@ export function toOutput(input: CreateTaskDto | Task) {
   };
 }
 
+export function toRawOutput(mock: Task | CreateTaskDto) {
+  return {
+    ...omit(mock, '__v'),
+  };
+}
+
 export function toUpdateOutput(
   originalInput: Task,
   updateInput: UpdateTaskDto,
 ) {
   return {
     ...toOutput(originalInput),
+    ...omit(updateInput, 'password'),
+  };
+}
+
+export function toRawUpdateOutput(
+  originalInput: Task,
+  updateInput: UpdateTaskDto,
+) {
+  return {
+    ...toRawOutput(originalInput),
     ...omit(updateInput, 'password'),
   };
 }

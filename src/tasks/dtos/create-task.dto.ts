@@ -33,5 +33,5 @@ export class CreateTaskDto {
   @ApiProperty({ enum: TaskStatus })
   status: TaskStatus;
 
-  createdBy: Types.ObjectId;
+  createdBy?: Types.ObjectId;
 }

@@ -12,7 +12,6 @@ services:
     depends_on:
       - mongo-test
     environment:
-      - MONGO_URI=mongodb://mongo-test:3001
       - NODE_ENV=test
 
   mongo-test:

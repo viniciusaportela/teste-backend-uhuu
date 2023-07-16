@@ -10,8 +10,8 @@ import {
   toRawUpdateOutput,
   userMock,
   userUpdateInput,
-} from '../../mocks/user.mock';
-import { userServiceMock } from '../../mocks/user-service.mock';
+} from '../../mocks/users/user.mock';
+import { userServiceMock } from '../../mocks/users/user-service.mock';
 
 describe('User Controller', () => {
   let app: INestApplication;

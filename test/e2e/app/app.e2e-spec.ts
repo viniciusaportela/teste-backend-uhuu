@@ -2,7 +2,7 @@ import request from 'supertest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../../../src/app.module';
-import { userMock } from '../../mocks/user.mock';
+import { userMock } from '../../mocks/users/user.mock';
 import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { clearDatabase } from '../../utils/clear-database';
@@ -11,7 +11,6 @@ import { addToCollection } from '../../utils/add-to-collection';
 import { getTestHeaders } from '../../utils/get-headers';
 import { removeFromCollection } from '../../utils/remove-from-collection';
 import { ErrorMessage } from '../../../src/utils/enums/error-message.enum';
-import { getLastInserted } from '../../utils/get-last-inserted';
 
 describe('App module (e2e)', () => {
   let app: INestApplication;

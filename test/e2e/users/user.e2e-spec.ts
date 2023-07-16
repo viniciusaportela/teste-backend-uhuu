@@ -11,7 +11,7 @@ import {
   userMock,
   userUpdateInput,
   wrongUserUpdateInput,
-} from '../../mocks/user.mock';
+} from '../../mocks/users/user.mock';
 import { Connection, Types } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { clearDatabase } from '../../utils/clear-database';
@@ -22,7 +22,7 @@ import { JwtService } from '@nestjs/jwt';
 import { getTestHeaders } from '../../utils/get-headers';
 import { removeFromCollection } from '../../utils/remove-from-collection';
 import { getLastInserted } from '../../utils/get-last-inserted';
-import { taskMock } from '../../mocks/task.mock';
+import { taskMock } from '../../mocks/tasks/task.mock';
 import { Task } from '../../../src/tasks/task.schema';
 
 describe('User module (e2e)', () => {

@@ -1,10 +1,10 @@
 import omit from 'lodash.omit';
-import { hashPasswordSync } from '../../src/utils/hash-password';
+import { hashPasswordSync } from '../../../src/utils/hash-password';
 import { Types } from 'mongoose';
 import { sign } from 'jsonwebtoken';
-import { User } from '../../src/users/user.schema';
-import { CreateUserDto } from '../../src/users/dtos/create-user.dto';
-import { UpdateUserDto } from '../../src/users/dtos/update-user.dto';
+import { User } from '../../../src/users/user.schema';
+import { CreateUserDto } from '../../../src/users/dtos/create-user.dto';
+import { UpdateUserDto } from '../../../src/users/dtos/update-user.dto';
 
 export const userMock = {
   _id: new Types.ObjectId('64b303431d9b59b567fac3a0'),

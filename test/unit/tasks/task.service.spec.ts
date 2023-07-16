@@ -7,15 +7,14 @@ import {
 import { TaskService } from '../../../src/tasks/task.service';
 import {
   taskMock,
-  taskCreateDto,
-  taskUpdateDto,
-  identityMock,
-  listTasksFromUserDto,
-  taskRepositoryMock,
-} from '../../mocks/task.mock';
+  taskUpdateInput,
+  toInput,
+  toRawOutput,
+} from '../../mocks/tasks/task.mock';
 import { TaskRepository } from '../../../src/tasks/task.repository';
-
-// DEV
+import { taskRepositoryMock } from '../../mocks/tasks/task-repository.mock';
+import { genMongoId } from '../../utils/gen-mongo-id';
+import { TaskStatus } from '../../../src/tasks/enums/task-status.enum';
 
 describe('Task Service', () => {
   let app: INestApplication;
@@ -48,57 +47,109 @@ describe('Task Service', () => {
 
   describe('create', () => {
     it('should create a task', async () => {
-      const response = await service.create(taskCreateDto);
-      expect(response).toStrictEqual(taskMock);
+      const response = await service.create(toInput(taskMock));
+
+      expect(response).toStrictEqual(toRawOutput(taskMock));
       expect(taskRepositoryMock.create).toBeCalledTimes(1);
-      expect(taskRepositoryMock.create).toBeCalledWith(taskCreateDto);
+      expect(taskRepositoryMock.create).toBeCalledWith(toInput(taskMock));
     });
   });
 
   describe('update', () => {
-    it('should fail if task does not exists or no permission', async () => {
+    it('should fail if task does not exists', async () => {
       taskRepositoryMock.findById.mockResolvedValueOnce(null);
 
-      const promise = service.update(identityMock, taskUpdateDto);
+      const promise = service.update(
+        { id: taskMock._id.toString(), userId: taskMock.createdBy.toString() },
+        taskUpdateInput,
+      );
+
       await expect(promise).rejects.toThrowError(NotFoundException);
       expect(taskRepositoryMock.findById).toBeCalledTimes(1);
     });
 
+    it("should fail if doesn't own the updated task", async () => {
+      taskRepositoryMock.findById.mockResolvedValueOnce({
+        ...toRawOutput(taskMock),
+        createdBy: genMongoId(),
+      });
+
+      const promise = service.update(
+        { id: taskMock._id.toString(), userId: taskMock.createdBy.toString() },
+        taskUpdateInput,
+      );
+
+      await expect(promise).rejects.toThrowError(ForbiddenException);
+      expect(taskRepositoryMock.findById).toBeCalledTimes(1);
+    });
+
     it('should update a task', async () => {
-      const response = await service.update(identityMock, taskUpdateDto);
-      expect(response).toStrictEqual(taskMock);
+      const response = await service.update(
+        { id: taskMock._id.toString(), userId: taskMock.createdBy.toString() },
+        taskUpdateInput,
+      );
+
+      expect(response).toStrictEqual(toRawOutput(taskMock));
+      expect(taskRepositoryMock.findById).toBeCalledTimes(1);
       expect(taskRepositoryMock.update).toBeCalledTimes(1);
       expect(taskRepositoryMock.update).toBeCalledWith(
-        identityMock.id,
-        taskUpdateDto,
+        taskMock._id.toString(),
+        taskUpdateInput,
       );
     });
   });
 
   describe('delete', () => {
-    it('should fail if task does not exists or no permission', async () => {
+    it('should fail if task does not exists', async () => {
       taskRepositoryMock.findById.mockResolvedValueOnce(null);
 
-      const promise = service.delete(identityMock);
+      const promise = service.delete({
+        id: taskMock._id.toString(),
+        userId: taskMock.createdBy.toString(),
+      });
+
       await expect(promise).rejects.toThrowError(NotFoundException);
       expect(taskRepositoryMock.findById).toBeCalledTimes(1);
     });
 
+    it("should fail if doesn't own the deleted task", async () => {
+      taskRepositoryMock.findById.mockResolvedValueOnce({
+        ...toRawOutput(taskMock),
+        createdBy: genMongoId(),
+      });
+
+      const promise = service.delete({
+        id: taskMock._id.toString(),
+        userId: taskMock.createdBy.toString(),
+      });
+
+      await expect(promise).rejects.toThrowError(ForbiddenException);
+      expect(taskRepositoryMock.findById).toBeCalledTimes(1);
+    });
+
     it('should delete a task', async () => {
-      const response = await service.delete(identityMock);
-      expect(response).toStrictEqual(taskMock);
+      const response = await service.delete({
+        id: taskMock._id.toString(),
+        userId: taskMock.createdBy.toString(),
+      });
+
+      expect(response).toStrictEqual(toRawOutput(taskMock));
+      expect(taskRepositoryMock.findById).toBeCalledTimes(1);
       expect(taskRepositoryMock.delete).toBeCalledTimes(1);
-      expect(taskRepositoryMock.delete).toBeCalledWith(identityMock.id);
+      expect(taskRepositoryMock.delete).toBeCalledWith(taskMock._id.toString());
     });
   });
 
   describe('deleteAllFromUser', () => {
     it('should delete all tasks from a user', async () => {
-      const response = await service.deleteAllFromUser(identityMock.userId);
-      expect(response).toStrictEqual([]);
+      const response = await service.deleteAllFromUser(
+        taskMock.createdBy.toString(),
+      );
+
+      expect(response).toStrictEqual({ acknowledged: true, deletedCount: 1 });
       expect(taskRepositoryMock.deleteAllFromUser).toBeCalledTimes(1);
       expect(taskRepositoryMock.deleteAllFromUser).toBeCalledWith(
-        identityMock.userId,
+        taskMock.createdBy.toString(),
       );
     });
   });
@@ -106,31 +157,64 @@ describe('Task Service', () => {
   describe('findAllFromUser', () => {
     it('should find all tasks from a user', async () => {
       const response = await service.findAllFromUser(
-        identityMock.userId,
-        listTasksFromUserDto,
+        taskMock.createdBy.toString(),
+        { status: TaskStatus.Done },
       );
-      expect(response).toStrictEqual([taskMock]);
+
+      expect(response).toStrictEqual([toRawOutput(taskMock)]);
       expect(taskRepositoryMock.findAllFromUser).toBeCalledTimes(1);
       expect(taskRepositoryMock.findAllFromUser).toBeCalledWith(
-        identityMock.userId,
-        listTasksFromUserDto,
+        taskMock.createdBy.toString(),
+        { status: TaskStatus.Done },
       );
     });
   });
 
   describe('findById', () => {
-    it('should fail if task does not exists or no permission', async () => {
+    it('should fail if task does not exists', async () => {
       taskRepositoryMock.findById.mockResolvedValueOnce(null);
 
-      const promise = service.findById(identityMock);
+      const promise = service.findById({
+        id: taskMock._id.toString(),
+        userId: taskMock.createdBy.toString(),
+      });
+
       await expect(promise).rejects.toThrowError(NotFoundException);
       expect(taskRepositoryMock.findById).toBeCalledTimes(1);
+      expect(taskRepositoryMock.findById).toBeCalledWith(
+        taskMock._id.toString(),
+      );
+    });
+
+    it("should fail if doesn't own the found task", async () => {
+      taskRepositoryMock.findById.mockResolvedValueOnce({
+        ...toRawOutput(taskMock),
+        createdBy: genMongoId(),
+      });
+
+      const promise = service.findById({
+        id: taskMock._id.toString(),
+        userId: taskMock.createdBy.toString(),
+      });
+
+      await expect(promise).rejects.toThrowError(ForbiddenException);
+      expect(taskRepositoryMock.findById).toBeCalledTimes(1);
+      expect(taskRepositoryMock.findById).toBeCalledWith(
+        taskMock._id.toString(),
+      );
     });
 
     it('should find a task', async () => {
-      const response = await service.findById(identityMock);
-      expect(response).toStrictEqual(taskMock);
+      const response = await service.findById({
+        id: taskMock._id.toString(),
+        userId: taskMock.createdBy.toString(),
+      });
+
+      expect(response).toStrictEqual(toRawOutput(taskMock));
       expect(taskRepositoryMock.findById).toBeCalledTimes(1);
+      expect(taskRepositoryMock.findById).toBeCalledWith(
+        taskMock._id.toString(),
+      );
     });
   });
 });

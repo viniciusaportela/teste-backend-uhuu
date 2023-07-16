@@ -11,7 +11,7 @@ import {
   toUpdateOutput,
   wrongTaskInput,
   wrongTaskUpdateInput,
-} from '../../mocks/task.mock';
+} from '../../mocks/tasks/task.mock';
 import { Connection } from 'mongoose';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { clearDatabase } from '../../utils/clear-database';
@@ -22,7 +22,7 @@ import { getLastInserted } from '../../utils/get-last-inserted';
 import { User } from '../../../src/users/user.schema';
 import { genMongoId } from '../../utils/gen-mongo-id';
 import { ErrorMessage } from '../../../src/utils/enums/error-message.enum';
-import { userMock } from '../../mocks/user.mock';
+import { userMock } from '../../mocks/users/user.mock';
 import { TaskStatus } from '../../../src/tasks/enums/task-status.enum';
 
 describe('Task module (e2e)', () => {
