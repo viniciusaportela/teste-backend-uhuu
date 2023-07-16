@@ -101,7 +101,7 @@ yarn test
 ```
 
 # Coverage
-O serviço possui 100% de cobertura de código nos testes
+O serviço possui 100% de cobertura de código nos testes (pode ser gerado com o comando `yarn test:cov` ou `npm run test:cov`)
 
 ![Code Coverage](/docs/coverage.png)
 
