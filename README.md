@@ -103,11 +103,13 @@ yarn test
 # Coverage
 O serviço possui 100% de cobertura de código nos testes
 
-![code coverage](/docs/coverage.png)
+![Code Coverage](/docs/coverage.png)
 
 # Documentação <a name="docs"></a>
 
 A API conta com uma documentação pelo Swagger que pode ser acessada pela rota `/docs` quando estiver rodando a aplicação
+
+![Swagger](/docs/swagger.png)
 
 # Fluxo Git
 
