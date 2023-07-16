@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { UserController } from '../../../src/users/user.controller';
 import { UserService } from '../../../src/users/user.service';
 import {
@@ -7,7 +7,9 @@ import {
   authRawOutput,
   toInput,
   toRawOutput,
+  toRawUpdateOutput,
   userMock,
+  userUpdateInput,
 } from '../../mocks/user.mock';
 import { userServiceMock } from '../../mocks/user-service.mock';
 
@@ -25,9 +27,6 @@ describe('User Controller', () => {
       .compile();
 
     app = appFixture.createNestApplication();
-    app.useGlobalPipes(
-      new ValidationPipe({ whitelist: true, transform: true }),
-    );
 
     controller = appFixture.get<UserController>(UserController);
 
@@ -61,6 +60,44 @@ describe('User Controller', () => {
       expect(response).toStrictEqual(authRawOutput);
       expect(userServiceMock.auth).toBeCalledTimes(1);
       expect(userServiceMock.auth).toBeCalledWith(authInput);
+    });
+  });
+
+  describe('updateMe', () => {
+    it('should update a user', async () => {
+      const response = await controller.updateMe(
+        userMock._id.toString(),
+        userUpdateInput,
+      );
+
+      expect(response).toStrictEqual(
+        toRawUpdateOutput(userMock, userUpdateInput),
+      );
+      expect(userServiceMock.update).toBeCalledTimes(1);
+      expect(userServiceMock.update).toBeCalledWith(
+        userMock._id.toString(),
+        userUpdateInput,
+      );
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a user', async () => {
+      const response = await controller.deleteMe(userMock._id.toString());
+
+      expect(response).toStrictEqual(toRawOutput(userMock));
+      expect(userServiceMock.delete).toBeCalledTimes(1);
+      expect(userServiceMock.delete).toBeCalledWith(userMock._id.toString());
+    });
+  });
+
+  describe('findById', () => {
+    it('should find a user by id', async () => {
+      const response = await controller.getMe(userMock._id.toString());
+
+      expect(response).toStrictEqual(toRawOutput(userMock));
+      expect(userServiceMock.findById).toBeCalledTimes(1);
+      expect(userServiceMock.findById).toBeCalledWith(userMock._id.toString());
     });
   });
 });

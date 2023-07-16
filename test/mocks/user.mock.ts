@@ -66,6 +66,16 @@ export function toUpdateOutput(
   };
 }
 
+export function toRawUpdateOutput(
+  originalInput: User,
+  updateInput: UpdateUserDto,
+) {
+  return {
+    ...toRawOutput(originalInput),
+    ...omit(updateInput, 'password'),
+  };
+}
+
 export function toRawOutput(input: any) {
   return {
     ...omit(input, 'password', '__v'),
